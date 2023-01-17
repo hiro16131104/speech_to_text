@@ -1,0 +1,27 @@
+{
+    "comment": "Vueアプリの設定ファイル",
+    "environment": {
+        "comment": "本番環境は'production'、開発環境は'development'",
+        "value": "development"
+    },
+    "backEndApiUrl": {
+        "comment": "flaskAPIのURL",
+        "production": "https://",
+        "development": "http://localhost:5000"
+    },
+    "fileSize": {
+        "comment": "アップロードを許可するファイルのサイズ（単位はByte）",
+        "audio": 20971520
+    },
+    "mimeType": {
+        "comment": "アップロードを許可するファイルの種類",
+        "audio": [
+            "audio/mpeg",
+            "audio/x-m4a",
+            "audio/aac",
+            "audio/wav",
+            "audio/webm",
+            "audio/ogg"
+        ]
+    }
+}

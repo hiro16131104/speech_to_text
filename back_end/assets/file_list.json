@@ -1,0 +1,133 @@
+{
+    "comment": [
+        "音声ファイルの処理状況を管理するためのリスト",
+        "stateに設定できる値",
+        "・uploaded",
+        "・transcribing",
+        "・transcribed",
+        "・downloaded",
+        "・deleted"
+    ],
+    "data": [
+        {
+            "id": 41,
+            "date": "2023-01-15",
+            "fileName": "2023-01-15_03cmpb56bb8.mp3",
+            "state": "error"
+        },
+        {
+            "id": 42,
+            "date": "2023-01-15",
+            "fileName": "2023-01-15_gksbsp73m08.m4a",
+            "state": "error"
+        },
+        {
+            "id": 43,
+            "date": "2023-01-15",
+            "fileName": "2023-01-15_sqsf9hlip6o.mp3",
+            "state": "error"
+        },
+        {
+            "id": 44,
+            "date": "2023-01-15",
+            "fileName": "2023-01-15_ic64vo8od5o.mp3",
+            "state": "error"
+        },
+        {
+            "id": 45,
+            "date": "2023-01-15",
+            "fileName": "2023-01-15_e37qs2nmbug.mp3",
+            "state": "transcribed"
+        },
+        {
+            "id": 46,
+            "date": "2023-01-15",
+            "fileName": "2023-01-15_svo28ra3fs8.mp3",
+            "state": "deleted"
+        },
+        {
+            "id": 47,
+            "date": "2023-01-15",
+            "fileName": "2023-01-15_8ndh0dt6og.m4a",
+            "state": "deleted"
+        },
+        {
+            "id": 48,
+            "date": "2023-01-15",
+            "fileName": "2023-01-15_35sdfpffl5g.mp3",
+            "state": "error"
+        },
+        {
+            "id": 49,
+            "date": "2023-01-15",
+            "fileName": "2023-01-15_re73nm6a06.mp3",
+            "state": "error"
+        },
+        {
+            "id": 50,
+            "date": "2023-01-16",
+            "fileName": "2023-01-16_fn3tj26pc5.mp3",
+            "state": "deleted"
+        },
+        {
+            "id": 51,
+            "date": "2023-01-16",
+            "fileName": "2023-01-16_ai9analc5vo.mp3",
+            "state": "deleted"
+        },
+        {
+            "id": 52,
+            "date": "2023-01-17",
+            "fileName": "2023-01-17_simna4i0d4.mp3",
+            "state": "transcribed"
+        },
+        {
+            "id": 53,
+            "date": "2023-01-17",
+            "fileName": "2023-01-17_nk16pa4cs0o.mp3",
+            "state": "deleted"
+        },
+        {
+            "id": 54,
+            "date": "2023-01-17",
+            "fileName": "2023-01-17_utpulp850mo.m4a",
+            "state": "deleted"
+        },
+        {
+            "id": 55,
+            "date": "2023-01-17",
+            "fileName": "2023-01-17_dogdh1o94kg.m4a",
+            "state": "transcribed"
+        },
+        {
+            "id": 56,
+            "date": "2023-01-17",
+            "fileName": "2023-01-17_49320v3egt.mp3",
+            "state": "deleted"
+        },
+        {
+            "id": 57,
+            "date": "2023-01-17",
+            "fileName": "2023-01-17_p2dtu084huo.mp3",
+            "state": "deleted"
+        },
+        {
+            "id": 58,
+            "date": "2023-01-17",
+            "fileName": "2023-01-17_6mhttae5je.m4a",
+            "state": "deleted"
+        },
+        {
+            "id": 59,
+            "date": "2023-01-17",
+            "fileName": "2023-01-17_56htuais7bo.m4a",
+            "state": "deleted"
+        },
+        {
+            "id": 60,
+            "date": "2023-01-17",
+            "fileName": "2023-01-17_pmq8ol1ggag.mp3",
+            "state": "deleted"
+        }
+    ]
+}

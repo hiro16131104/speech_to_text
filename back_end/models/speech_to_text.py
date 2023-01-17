@@ -1,0 +1,85 @@
+import whisper
+import pandas as pd
+import csv
+import math
+
+
+# 音声ファイルからテキストを作成するためのクラス
+class SpeechToText:
+    # 共通変数
+    TINY = "tiny"
+    BASE = "base"
+    SMALL = "small"
+    MEDIUM = "medium"
+    LARGE = "large"
+    list_model_name = [TINY, BASE, SMALL, MEDIUM, LARGE]
+
+    ENCODING = "utf_8_sig"
+
+    def __init__(self, file_path_audio: str = "") -> None:
+        self.file_path_audio = file_path_audio
+        self.dict_result = {}
+        self.list_segments = []
+
+    # 文字起こし
+    # learned_model（学習モデル）は、tiny,base,small,medium,largeの5種類
+    def transcribe(self, model_name: str, language: str = None) -> None:
+        model = None
+
+        if model_name not in self.list_model_name:
+            raise Exception("引数'model_name'が不正です。")
+
+        model = whisper.load_model(model_name)
+
+        if language:
+            self.dict_result = model.transcribe(
+                self.file_path_audio,
+                language=language
+            )
+        else:
+            self.dict_result = model.transcribe(self.file_path_audio)
+
+    # 引数の「秒」を「時・分・秒」に変換し、「00:00:00」の形式で返却
+    def convert_sec_to_str_time(self, arg_sec: int) -> str:
+        if arg_sec < 1:
+            return "00:00:00"
+
+        sec = math.floor(arg_sec)
+        min = 0
+        hour = 0
+        min = sec // 60
+        sec = sec % 60
+        hour = min // 60 if min > 0 else 0
+        min = min % 60 if hour > 0 else min
+
+        return f"{str(hour).zfill(2)}:{str(min).zfill(2)}:{str(sec).zfill(2)}"
+
+    # 文字起こしの結果をcsvファイルに出力
+    def write_to_csv_file(self, file_path_csv: str) -> None:
+        # DataFrameに変換
+        df_segments = pd.DataFrame(self.dict_result["segments"])
+        # 不要な列を削除
+        df_segments.drop(
+            columns=["seek", "tokens", "temperature", "avg_logprob",
+                     "compression_ratio", "no_speech_prob"],
+            inplace=True
+        )
+
+        # 秒の列を「00:00:00」に変換（更新）
+        for idx, item in df_segments.iterrows():
+            new_value_start = self.convert_sec_to_str_time(int(item["start"]))
+            new_value_end = self.convert_sec_to_str_time(int(item["end"]))
+            df_segments.loc[idx, "start"] = new_value_start
+            df_segments.loc[idx, "end"] = new_value_end
+
+        # csvファイルに出力(パラメータ"utf_8_sig"は、Excel対策)
+        df_segments.to_csv(
+            file_path_csv, index=False, encoding=self.ENCODING,
+            quoting=csv.QUOTE_NONNUMERIC
+        )
+
+    # csvファイルを読み込み、オブジェクトに戻す
+    def convert_csv_to_obj(self, file_path_csv: str) -> None:
+        df_segments = pd.read_csv(file_path_csv, encoding=self.ENCODING)
+        # 変換後の例:[{"X":"aa", "Y":"pp"},{"X":"bb", "Y":"qq"}]
+        self.list_segments = df_segments.to_dict(orient="records")

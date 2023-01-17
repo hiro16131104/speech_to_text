@@ -1,0 +1,12 @@
+# git管理から除外するファイル
+/back_end/__pycache__
+/back_end/.vscode
+/back_end/venv
+/back_end/models/__pycache__
+/front_end/node_modules
+*.mp3
+*.m4a
+*.aac
+*.wav
+*.webm
+*.ogg
