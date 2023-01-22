@@ -12,13 +12,16 @@
     <FlexContainer id="contentArea" class="content-area fade-up-content-area" :bg-color="white"
       :size="outerContainer.size" :display="outerContainer.display" :max-width="outerContainer.maxWidth"
       :is-vertical="true">
+      <p :style="description.style">
+        {{ description.text }}
+      </p>
 
       <!-- 音声ファイルの入力 -->
       <FlexContainer :bg-color="transparent" :size="innerContainer.size" :display="innerContainer.display"
         :is-vertical="true">
         <!-- ファイルを直接アップロードする場合 -->
-        <p>
-          A. すでに音声ファイルを持っている。
+        <p class="margin-top-2">
+          音声データを持っている方はこちら
         </p>
         <FileUploader id="fileUploader" ref="fileUploader" class="margin-top-2" @change-file="createFileUrl"
           :mimeTypes="fileUploader.mimeTypes" :color="fileUploader.color" width="100%"
@@ -29,7 +32,7 @@
         </p>
         <!-- 録音してアップロードする場合 -->
         <p class="margin-top-2">
-          B. これから録音する。
+          これから録音する方はこちら
         </p>
         <AudioRecorder id="audioRecorder" ref="audioRecorder" class="margin-top-2" width="100%"
           :button="recorder.button" :blob-info-color="recorder.blobInfoColor" @recording-end="handleRecordingEnd"
@@ -42,7 +45,7 @@
       </FlexContainer>
 
       <!-- 処理の状態を表示 -->
-      <span class="margin-top-4" :style="stateMsg.style">
+      <span class="margin-top-3" :style="stateMsg.style">
         {{ stateMsg.text }}
       </span>
 
@@ -50,17 +53,25 @@
       <FlexContainer v-if="!isTranscribed" :bg-color="transparent" :size="innerContainer.size"
         :display="innerContainer.display" :is-vertical="true">
         <!-- サーバーへのアップロードボタン -->
-        <CustomIconButton id="uploadButton" class="margin-top-2" :font="uploadButton.font"
+        <CustomIconButton id="uploadButton" class="margin-top-3" :font="uploadButton.font"
           :bg-color="uploadButton.bgColor" :icon="uploadButton.icon" :padding="uploadButton.padding"
           :width="uploadButton.width" :round="uploadButton.round" :is-disabled="uploadButton.isDisabled"
           :is-loading="uploadButton.isLoading" @click="handleClickUploadButton">
-          UPLOAD
+          アップロード
         </CustomIconButton>
         <!-- 初期化ボタン -->
-        <CustomIconButton id="clearButton" class="margin-top-2" :font="clearButton.font" :bg-color="clearButton.bgColor"
-          :icon="clearButton.icon" :padding="clearButton.padding" :width="clearButton.width" :round="clearButton.round"
-          :type="clearButton.type" @click="handleClickClearButton">
-          CLEAR
+        <CustomIconButton v-show="!isUploaded" id="clearButton" class="margin-top-2" :font="clearButton.font"
+          :bg-color="clearButton.bgColor" :icon="clearButton.icon" :padding="clearButton.padding"
+          :width="clearButton.width" :round="clearButton.round" :type="clearButton.type"
+          @click="handleClickClearButton">
+          クリア
+        </CustomIconButton>
+        <!-- キャンセルボタン -->
+        <CustomIconButton v-show="isUploaded" id="cancelButton" class="margin-top-2" :font="cancelButton.font"
+          :bg-color="cancelButton.bgColor" :icon="cancelButton.icon" :padding="cancelButton.padding"
+          :width="cancelButton.width" :round="cancelButton.round" :type="cancelButton.type"
+          :is-disabled="cancelButton.isDisabled" :is-loading="cancelButton.isLoading" @click="handleClickCancelButton">
+          キャンセル
         </CustomIconButton>
       </FlexContainer>
 
@@ -68,18 +79,18 @@
       <FlexContainer v-else :bg-color="transparent" :size="innerContainer.size" :display="innerContainer.display"
         :is-vertical="true">
         <!-- 表示ボタン -->
-        <CustomIconButton id="displayButton" class="margin-top-4" :font="displayButton.font"
+        <CustomIconButton id="displayButton" class="margin-top-2" :font="displayButton.font"
           :bg-color="displayButton.bgColor" :icon="displayButton.icon" :padding="displayButton.padding"
           :width="displayButton.width" :round="displayButton.round" :is-disabled="displayButton.isDisabled"
           :is-loading="displayButton.isLoading" @click="handleClickDisplayButton">
-          DISPLAY
+          表示
         </CustomIconButton>
         <!-- ダウンロードボタン -->
         <CustomIconButton id="downloadButton" class="margin-top-2" :font="downloadButton.font"
           :bg-color="downloadButton.bgColor" :icon="downloadButton.icon" :padding="downloadButton.padding"
           :width="downloadButton.width" :round="downloadButton.round" :is-disabled="downloadButton.isDisabled"
           :is-loading="downloadButton.isLoading" @click="handleClickDownloadButton">
-          DOWNLOAD
+          ダウンロード
         </CustomIconButton>
         <!-- csvファイルを保存する際に使用 -->
         <a id="downloadLink" ref="downloadLink" class="download-link" target="_blank">
@@ -90,8 +101,19 @@
           :icon="resetButton.icon" :padding="resetButton.padding" :width="resetButton.width" :round="resetButton.round"
           :type="resetButton.type" :is-disabled="resetButton.isDisabled" :is-loading="resetButton.isLoading"
           @click="handleClickResetButton">
-          RESET
+          リセット
         </CustomIconButton>
+      </FlexContainer>
+      <!-- 文字起こしの結果を表示 -->
+      <FlexContainer v-if="isDisplayTable" :bg-color="transparent" :size="innerContainer.size"
+        :display="innerContainer.display" :is-vertical="true">
+        <p class="margin-top-3">
+          解析結果
+        </p>
+        <!-- 結果を表示するためのテーブル -->
+        <TableNoFrame id="resultTable" class="margin-top-1 margin-bottom-1" :header-values="resultTable.headerValues"
+          :body-values="resultTable.bodyValues" :align="resultTable.align">
+        </TableNoFrame>
       </FlexContainer>
     </FlexContainer>
   </FlexContainer>
@@ -103,16 +125,25 @@ import { ref } from "@vue/reactivity"
 import { FileAccess } from "./models/FileAccess"
 import { WebApiCall } from "./models/WebApiCall"
 import { DateTime } from "./models/DateTime"
+import { CustomLocalStorage } from "./models/CustomLocalStorage"
+import { Utility } from "./models/Utility"
 import FlexContainer from "./components/FlexContainer.vue"
 import FileUploader from "./components/FileUploader.vue"
 import CustomIconButton from "./components/CustomIconButton.vue"
 import AnimeTitle from "./components/AnimeTitle.vue"
 import AudioPlayer from "./components/AudioPlayer.vue"
 import AudioRecorder from "./components/AudioRecorder.vue"
+import TableNoFrame from "./components/TableNoFrame.vue"
 
 export default {
   components: {
-    FlexContainer, FileUploader, CustomIconButton, AnimeTitle, AudioPlayer, AudioRecorder
+    FlexContainer,
+    FileUploader,
+    CustomIconButton,
+    AnimeTitle,
+    AudioPlayer,
+    AudioRecorder,
+    TableNoFrame
   },
   computed: {
     // 音声プレイヤーのprops
@@ -128,6 +159,20 @@ export default {
           color: this.themeColor.solidPurple2
         },
         endTimeSec: this.audioEndTimeSec
+      }
+    },
+    // キャンセルボタンのprops
+    cancelButton() {
+      return {
+        font: { size: "16px", weight: "600", color: this.themeColor.solidPurple2 },
+        padding: ["9px", "20px", "9px", "20px"],
+        bgColor: this.themeColor.solidPurple2,
+        icon: "mdi-delete-forever-outline",
+        width: "100%",
+        round: "30px",
+        type: "outlined",
+        isDisabled: this.cancelButtonState.isDisabled,
+        isLoading: this.cancelButtonState.isLoading
       }
     },
     // 初期化ボタンのprops
@@ -218,6 +263,15 @@ export default {
         },
       }
     },
+    description() {
+      return {
+        text: "音声を解析してテキストを作成します。",
+        style: {
+          fontSize: "0.8em",
+          color: this.themeColor.solidPink2,
+        }
+      }
+    },
     // アップロードボタンのprops
     uploadButton() {
       return {
@@ -240,8 +294,11 @@ export default {
       audioEndTimeSec: 0,
       // 音声ファイル（Blob）
       audioFile: undefined,
+      // キャンセルボタンの状態
+      cancelButtonState: { isDisabled: false, isLoading: false },
       // コンテンツエリアの初期位置
       contentAreaPositionInitY: ref(""),
+      customLocalStorage: new CustomLocalStorage("speechToText"),
       // 表示ボタンの状態
       displayButtonState: { isDisabled: false, isLoading: false },
       // ダウンロードボタンの状態
@@ -253,8 +310,12 @@ export default {
         size: { height: "fit-content", width: "100%" },
         display: { vertical: "center", horizontal: "center" },
       },
+      // 文字起こしの結果を格納するテーブルを表示する場合はtrue
+      isDisplayTable: false,
       // 文字起こしが完了した場合はtrue
       isTranscribed: false,
+      // アップロードが完了した場合はtrue
+      isUploaded: false,
       // 大外の枠のprops
       outerFrame: {
         size: { height: "fit-content", width: "100vw" },
@@ -270,10 +331,24 @@ export default {
       playTimer: undefined,
       // リセットロードボタンの状態
       resetButtonState: { isDisabled: false, isLoading: false },
+      // 文字起こしの結果を表示するテーブルにバインドする値（配列）
+      resultTable: {
+        headerValues: ["id", "開始", "終了", "テキスト"],
+        bodyValues: [],
+        align: { header: "center", body: "left" }
+      },
       // サーバーに保存したファイルの名前
       serverFileName: {
         audio: "",
         csv: ""
+      },
+      state: {
+        UPLOADED: "uploaded",
+        TRANSCRIBING: "transcribing",
+        TRANSCRIBED: "transcribed",
+        DOWNLOADED: "downloaded",
+        DELETED: "deleted",
+        ERROR: "error"
       },
       // 処理の状態を表示
       stateMsgText: "サーバーとの接続を確認しています。",
@@ -316,14 +391,48 @@ export default {
         `?fileNameAudio=${this.serverFileName.audio}`
       )
       webApiCall.callApiGet()
-        // 返却されたメッセージを画面に表示
         .then(() => {
+          // 返却されたメッセージを画面に表示
           this.stateMsgText = webApiCall.responseData["msg"]
+          // フラグを一旦リセット
+          this.isUploaded = false
+          this.isTranscribed = false
+          this.uploadButtonState.isDisabled = false
+          this.uploadButtonState.isLoading = false
+          this.cancelButtonState.isDisabled = false
+          this.cancelButtonState.isLoading = false
 
-          // 文字起こしが完了した場合
-          if (webApiCall.responseData["state"] === "transcribed") {
-            this.isTranscribed = true
-            this.serverFileName.csv = `${this.serverFileName.audio.split(".")[0]}.csv`
+          // 処理状況に応じてフラグを変更
+          switch (webApiCall.responseData["state"]) {
+            case this.state.UPLOADED:
+              this.isUploaded = true
+              // アップロードボタンを使用不可に
+              this.uploadButtonState.isDisabled = true
+              this.uploadButtonState.isLoading = true
+              break
+            case this.state.TRANSCRIBING:
+              this.isUploaded = true
+              // アップロードボタンを使用不可に
+              this.uploadButtonState.isDisabled = true
+              this.uploadButtonState.isLoading = true
+              // キャンセルボタンを使用不可に
+              this.cancelButtonState.isDisabled = true
+              this.cancelButtonState.isLoading = true
+              break
+            case this.state.TRANSCRIBED:
+              this.isTranscribed = true
+              this.serverFileName.csv = `${this.serverFileName.audio.split(".")[0]}.csv`
+              // ブラウザにcsvファイルの名称を保存
+              this.customLocalStorage.setItem(this.serverFileName)
+              break
+            case this.state.DOWNLOADED:
+              this.isTranscribed = true
+              break
+          }
+          if (this.stateMsgText.includes("まもなく")) {
+            // キャンセルボタンを使用不可に
+            this.cancelButtonState.isDisabled = true
+            this.cancelButtonState.isLoading = true
           }
         })
         .catch((error) => {
@@ -386,13 +495,16 @@ export default {
       if (extension.includes(";")) {
         extension = extension.split(";")[0]
       }
-      extension = extension.replace("mpeg", "mp3").replace("x-", "")
+      extension = extension
+        .replace("mpeg", "mp3")
+        .replace("x-m4a", "m4a")
+        .replace("x-ms-wma", "wma")
 
       // サーバーに保存する際のファイル名は、日付+半角英数字で12桁以下のランダムな文字列
-      // ex) 2023-01-15_seh9kuoplmow.mp3
+      // ex) 2023-01-15_aksjavnmnaweoijg.mp3
       savingFileName = (
         `${dateTime.getStringFromDate("-")}_` +
-        Math.random().toString(32).substring(2) +
+        Utility.getRandomString(16) +
         `.${extension}`
       )
 
@@ -406,15 +518,16 @@ export default {
         ])
         await webApiCall.callApiPost()
         this.serverFileName.audio = savingFileName
-        // サーバーに処理状況を問い合わせ
-        this.resetTimer()
+        // 音声ファイルの名称をローカルストレージに保存
+        this.customLocalStorage.setItem(this.serverFileName)
       }
       catch (error) {
         console.log(error.message)
         alert("音声ファイルの保存中にエラーが発生しました。")
-        // アップロードボタンを使用可に
-        this.uploadButtonState.isDisabled = false
-        this.uploadButtonState.isLoading = false
+      }
+      finally {
+        // サーバーに処理状況を問い合わせ
+        this.resetTimer()
       }
 
       // 文字起こしを実行
@@ -423,18 +536,11 @@ export default {
         `${this.appConfig.backEndApiUrl}/transcribe?fileNameAudio=${savingFileName}`
       )
       webApiCall.callApiGet()
-        .then(() => {
-          // 文字起こし完了
-          webApiCall.responseData["fileNameCsv"]
-        })
         .catch((error) => {
           console.log(error.message)
-          alert("文字起こし中にエラーが発生しました。")
+          alert("音声からテキストへ変換する際にエラーが発生しました。")
         })
         .finally(() => {
-          // アップロードボタンを使用可に
-          this.uploadButtonState.isDisabled = false
-          this.uploadButtonState.isLoading = false
           // サーバーに処理状況を問い合わせ（変換完了）
           this.resetTimer()
         })
@@ -456,6 +562,37 @@ export default {
       // ローディング中でなければ、アップロードボタンを使用可に
       this.uploadButtonState.isDisabled = this.uploadButtonState.isLoading ? true : false
     },
+    // キャンセルボタンのクリック
+    handleClickCancelButton() {
+      let webApiCall = undefined
+
+      // キャンセルボタンを使用不可に
+      this.cancelButtonState.isDisabled = true
+      this.cancelButtonState.isLoading = true
+
+      // キャンセル処理（音声ファイルの削除）
+      // 音声ファイルの名称をパラメーターにセットし、deleteメソッドでリクエスト
+      webApiCall = new WebApiCall(
+        `${this.appConfig.backEndApiUrl}/cancelTranscribing` +
+        `/${this.serverFileName.audio}`
+      )
+      webApiCall.callApiDelete()
+        .then(() => {
+          // サーバーに保存した際のファイル名をクリア
+          this.serverFileName.audio = ""
+          this.serverFileName.csv = ""
+          // ブラウザに保存していた音声、csvファイルの名称を削除
+          this.customLocalStorage.removeItem()
+        })
+        .catch((error) => {
+          console.log(error.message)
+          alert("キャンセル処理中（音声ファイルの削除中）にエラーが発生しました。")
+        })
+        .finally(() => {
+          // サーバーに処理状況を問い合わせ
+          this.resetTimer()
+        })
+    },
     // 表示ボタンのクリック
     handleClickDisplayButton() {
       let webApiCall = undefined
@@ -473,7 +610,21 @@ export default {
       )
       webApiCall.callApiGet()
         .then(() => {
-          console.log(webApiCall.responseData)
+          // レスポンスデータを配列に変換
+          const segments = Array.from(webApiCall.responseData["segments"])
+
+          // 初期化
+          this.resultTable.bodyValues = []
+          // 2次元配列を作成
+          // [{"X":"a", "Y":"b"}, {"X":"c", "Y":"d"}] ⇒ [["a", "b"]["c", "d"]]
+          segments.map((x) => {
+            const array = []
+
+            array.push(x["id"], x["start"], x["end"], x["text"])
+            this.resultTable.bodyValues.push(array)
+          })
+          // 文字起こしの結果を格納するテーブルを表示
+          this.isDisplayTable = true
         })
         .catch((error) => {
           console.log(error.message)
@@ -489,8 +640,8 @@ export default {
     },
     // ダウンロードボタンをクリック
     handleClickDownloadButton() {
-      let webApiCall = undefined
       const dateTime = new DateTime()
+      let webApiCall = undefined
 
       // ダウンロードボタンを使用不可に
       this.downloadButtonState.isDisabled = true
@@ -543,10 +694,14 @@ export default {
       )
       webApiCall.callApiDelete()
         .then(() => {
-          this.isTranscribed = false
           // サーバーに保存した際のファイル名をクリア
           this.serverFileName.audio = ""
           this.serverFileName.csv = ""
+          // ブラウザに保存していた音声、csvファイルの名称を削除
+          this.customLocalStorage.removeItem()
+          // 文字起こしの結果を格納するテーブルを非表示にし、値を初期化
+          this.isDisplayTable = false
+          this.resultTable.bodyValues = []
         })
         .catch((error) => {
           console.log(error.message)
@@ -592,6 +747,12 @@ export default {
       document.removeEventListener("wheel", noScroll, { passive: false })
     }, 6000)
 
+    // ブラウザに保存していたcsvファイルの名称を取得（前回アクセス時、途中離脱した場合）
+    // 同時接続の検証（テスト）をする場合は、以下の3行をコメントアウトする
+    if (this.customLocalStorage.checkExistItem()) {
+      this.serverFileName = this.customLocalStorage.getItem()
+    }
+
     // 0.5秒の間をおいた後、処理状況をサーバーに問い合わせ（10秒間隔）
     setTimeout(() => {
       this.resetTimer()
@@ -635,6 +796,22 @@ export default {
 
 .margin-top-4 {
   margin-top: 40px;
+}
+
+.margin-bottom-1 {
+  margin-bottom: 10px;
+}
+
+.margin-bottom-2 {
+  margin-bottom: 20px;
+}
+
+.margin-bottom-3 {
+  margin-bottom: 30px;
+}
+
+.margin-bottom-4 {
+  margin-bottom: 40px;
 }
 
 /* コンテンツエリアは画面外（画面下）から出現させる */

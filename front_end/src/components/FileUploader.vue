@@ -75,7 +75,10 @@ export default {
         // ユーザーに表示する際、mimeTypeを一般的な名詞に変換（mpeg ⇒ mp3等）
         fileType() {
             const fileType = this.mimeTypes.map(value => value.split("/")[1]).join(", ")
-            return fileType.replace("mpeg", "mp3").replace("x-", "")
+            return fileType
+                .replace("mpeg", "mp3")
+                .replace("x-m4a", "m4a")
+                .replace("x-ms-wma", "wma")
         }
     },
     data() {

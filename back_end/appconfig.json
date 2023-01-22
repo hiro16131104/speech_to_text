@@ -11,13 +11,13 @@
             "debug": false,
             "testing": false,
             "jsonAsAscii": false,
-            "maxContentLength": 20971520
+            "maxContentLength": 104857600
         },
         "development": {
             "debug": true,
             "testing": false,
             "jsonAsAscii": false,
-            "maxContentLength": 20971520
+            "maxContentLength": 104857600
         }
     },
     "dirPath": {
@@ -42,7 +42,8 @@
             "audio/aac",
             "audio/wav",
             "audio/webm",
-            "audio/ogg"
+            "audio/ogg",
+            "audio/x-ms-wma"
         ]
     }
 }

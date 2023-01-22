@@ -5,13 +5,13 @@
         <CustomIconButton :id="idRecordButton" class="fade-in" v-if="!isRecording" icon="mdi-microphone"
             :font="button.font" :bg-color="button.bgColor" :padding="button.padding" :round="button.round"
             :width="button.width" :type="button.type" @click="handleClickRecordButton">
-            RECORD
+            録音開始
         </CustomIconButton>
         <!-- 停止ボタン -->
         <CustomIconButton :id="idStopButton" class="fade-in" v-else icon="mdi-microphone-off" :font="stopButton.font"
             :bg-color="stopButton.bgColor" :padding="stopButton.padding" :round="stopButton.round"
             :width="stopButton.width" :type="stopButton.type" @click="handleClickStopButton">
-            STOP
+            録音停止
         </CustomIconButton>
         <!-- エラーメッセージ -->
         <span v-show="isError" class="msg-base msg-warn">
