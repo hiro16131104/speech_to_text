@@ -32,6 +32,7 @@ def save_file() -> Response:
     dir_path_csv = ""
     dir_name_today = saving_file_name.split("_")[0]
     list_mime_type = []
+    list_audio_file_name = []
     file_list = None
     file_access = FileAccess(PATH_CONFIG_FILE)
 
@@ -78,10 +79,18 @@ def save_file() -> Response:
             for file_name in list_file_name:
                 file_list.update_state_in_item(file_list.ERROR, file_name)
 
+    # 保存されている音声ファイルの名称を一括取得
+    for _, _, files in os.walk(dir_path_audio):
+        if len(files) > 0:
+            list_audio_file_name.extend(files)
+
+    # 既に音声ファイルを削除しているのに、stateがdeletedになっていないものは更新
+    file_list.bulk_update_state_to_deleted(list_audio_file_name)
+
     # 音声ファイルを保存
     audio_file.save(os.path.join(
-        dir_path_audio, dir_name_today, saving_file_name))
-
+        dir_path_audio, dir_name_today, saving_file_name
+    ))
     # 音声データの情報を追加
     file_list.append_item(saving_file_name)
     # 最新の1000件以外は削除
@@ -117,7 +126,8 @@ def transcribe() -> Response:
     file_list = FileList(file_access.json_data["filePath"]["fileList"])
 
     try:
-        environment = ""
+        environment = file_access.json_data["environment"]["value"]
+        parallel_count = file_access.json_data["parallelCount"][environment]
         model_name = ""
 
         while True:
@@ -134,9 +144,11 @@ def transcribe() -> Response:
             if state != file_list.UPLOADED:
                 return make_response(jsonify({"result": "Cancel"}))
             # ・待機中となっているファイルがある
-            # ・変換処理中のファイルが2件以上ある
+            # ・変換処理中のファイルが●件以上ある
             # 場合は、10秒置いた後、再度確認
-            elif not (uploaded_count == 0 and transcribing_count < 2):
+            elif not (
+                uploaded_count == 0 and transcribing_count < parallel_count
+            ):
                 time.sleep(10)
             else:
                 break
@@ -144,9 +156,8 @@ def transcribe() -> Response:
         # file_list.jsonのstateを更新（文字起こし中）
         file_list.update_state_in_item(file_list.TRANSCRIBING, file_name_audio)
         # 設定ファイルから、使用する学習モデルの名称を取得
-        environment = file_access.json_data["environment"]["value"]
         model_name = (
-            file_access.json_data["modelName"][environment]["speechToText"]
+            file_access.json_data["modelName"][environment]
         )
         # 音声ファイルからテキストを作成し、csvファイルに出力
         speech_to_text = SpeechToText(file_path_audio)
@@ -319,6 +330,12 @@ def get_state_transcription() -> Response:
     dict_result = file_list.get_state_with_msg(file_name_audio)
 
     return make_response(jsonify(dict_result))
+
+
+# apiの接続テスト用
+@app.route("/test", methods=["GET"])
+def test() -> Response:
+    return "接続テストOK。このURLは有効です。"
 
 
 # エラーが発生したとき処理

@@ -32,7 +32,7 @@ export default {
             type: Array,
             required: true
         },
-        // ヘッダーとボディの間に引く線の色
+        // ヘッダーとボディに引く線の色
         lineColor: {
             type: String,
             required: false,
@@ -63,7 +63,10 @@ export default {
             }
         },
         bodyStyle() {
-            return { textAlign: this.align.body }
+            return {
+                borderTop: `0.5px solid ${this.lineColor}`,
+                textAlign: this.align.body
+            }
         }
     },
 }

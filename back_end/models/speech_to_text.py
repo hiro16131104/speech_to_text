@@ -2,6 +2,7 @@ import whisper
 import pandas as pd
 import csv
 import math
+import torch
 
 
 # 音声ファイルからテキストを作成するためのクラス
@@ -13,7 +14,7 @@ class SpeechToText:
     MEDIUM = "medium"
     LARGE = "large"
     list_model_name = [TINY, BASE, SMALL, MEDIUM, LARGE]
-
+    # BOM付きのUTF-8（Excel対策）
     ENCODING = "utf_8_sig"
 
     def __init__(self, file_path_audio: str = "") -> None:
@@ -21,25 +22,67 @@ class SpeechToText:
         self.dict_result = {}
         self.list_segments = []
 
+    # 文字起こし（cpuの場合）
+    def __transcribe_cpu(
+        self, arg_model_name: str, language: str = None
+    ) -> None:
+        # cpuの場合、学習モデルはmediumを上限とする
+        model_name = (
+            self.MEDIUM if arg_model_name == self.LARGE else arg_model_name
+        )
+        # モデルをcpuで読み込み
+        model = whisper.load_model(model_name, "cpu")
+        # 音声からテキストへ変換
+        self.dict_result = model.transcribe(
+            self.file_path_audio,
+            language=language,
+            beam_size=5,
+            fp16=False,
+            without_timestamps=True
+        )
+
+    # 文字起こし（gpuの場合）
+    def __transcribe_cuda(self, model_name: str, language: str = None) -> None:
+        # 重み情報をcpuで読み込み（gpuのメモリ節約）
+        model = whisper.load_model(model_name, "cpu")
+        # モデルをfp32からfp16に変換し、gpuのメモリに配置する
+        _ = model.half()
+        _ = model.cuda()
+
+        # LayerNormの重みだけfp32にする（これをしないと例外が発生する）
+        for m in model.modules():
+            if isinstance(m, whisper.model.LayerNorm):
+                m.float()
+
+        # 音声からテキストへ変換
+        self.dict_result = model.transcribe(
+            self.file_path_audio,
+            language=language,
+            beam_size=5,
+            fp16=True,
+            without_timestamps=True
+        )
+
     # 文字起こし
     # learned_model（学習モデル）は、tiny,base,small,medium,largeの5種類
     def transcribe(self, model_name: str, language: str = None) -> None:
-        model = None
-
+        # 引数のバリデーション
         if model_name not in self.list_model_name:
             raise Exception("引数'model_name'が不正です。")
+        elif (
+            language
+            and language.lower() not in ["japanese", "english", "ja", "en"]
+        ):
+            raise Exception("引数languageが不正です。")
 
-        model = whisper.load_model(model_name)
-
-        if language:
-            self.dict_result = model.transcribe(
-                self.file_path_audio,
-                language=language
-            )
+        # gpuが使える場合は、cuda用のメソッドを使用
+        if torch.cuda.is_available():
+            self.__transcribe_cuda(model_name, language)
         else:
-            self.dict_result = model.transcribe(self.file_path_audio)
+            self.__transcribe_cpu(model_name, language)
 
     # 引数の「秒」を「時・分・秒」に変換し、「00:00:00」の形式で返却
+
     def convert_sec_to_str_time(self, arg_sec: int) -> str:
         if arg_sec < 1:
             return "00:00:00"

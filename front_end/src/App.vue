@@ -333,7 +333,7 @@ export default {
       resetButtonState: { isDisabled: false, isLoading: false },
       // 文字起こしの結果を表示するテーブルにバインドする値（配列）
       resultTable: {
-        headerValues: ["id", "開始", "終了", "テキスト"],
+        headerValues: ["時間", "テキスト"],
         bodyValues: [],
         align: { header: "center", body: "left" }
       },
@@ -397,10 +397,14 @@ export default {
           // フラグを一旦リセット
           this.isUploaded = false
           this.isTranscribed = false
-          this.uploadButtonState.isDisabled = false
-          this.uploadButtonState.isLoading = false
           this.cancelButtonState.isDisabled = false
           this.cancelButtonState.isLoading = false
+
+          // 録音中でなければ、アップロードボタンのフラグもリセット
+          if (!this.$refs.audioRecorder.isRecording) {
+            this.uploadButtonState.isDisabled = false
+            this.uploadButtonState.isLoading = false
+          }
 
           // 処理状況に応じてフラグを変更
           switch (webApiCall.responseData["state"]) {
@@ -620,7 +624,7 @@ export default {
           segments.map((x) => {
             const array = []
 
-            array.push(x["id"], x["start"], x["end"], x["text"])
+            array.push(`${x["start"]}〜${x["end"]}`, x["text"])
             this.resultTable.bodyValues.push(array)
           })
           // 文字起こしの結果を格納するテーブルを表示

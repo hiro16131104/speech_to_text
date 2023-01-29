@@ -11,29 +11,32 @@
             "debug": false,
             "testing": false,
             "jsonAsAscii": false,
-            "maxContentLength": 104857600
+            "maxContentLength": 52428800
         },
         "development": {
             "debug": true,
             "testing": false,
             "jsonAsAscii": false,
-            "maxContentLength": 104857600
+            "maxContentLength": 52428800
         }
     },
     "dirPath": {
         "audioFiles": "./assets/audio_files",
-        "csvFiles": "./assets/csv_files"
+        "csvFiles": "./assets/csv_files",
+        "model": "./learned_model"
     },
     "filePath": {
         "fileList": "./assets/file_list.json"
     },
     "modelName": {
-        "production": {
-            "speechToText": "small"
-        },
-        "development": {
-            "speechToText": "small"
-        }
+        "comment": "whisperの学習モデル。'tiny'or'base'or'small'or'medium'or''or'large",
+        "production": "small",
+        "development": "small"
+    },
+    "parallelCount": {
+        "comment": "whisperを同時に実行する件数の上限",
+        "production": 2,
+        "development": 2
     },
     "mimeType": {
         "audio": [

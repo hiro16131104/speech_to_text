@@ -179,6 +179,25 @@ class FileList:
         # jsonファイルへ書き込み
         self.__write_items_to_file()
 
+    # 一括でstateをdeletedに更新（更新対象から除外するファイルの名称を引数に渡す）
+    def bulk_update_state_to_deleted(
+        self, list_ignore_file_name: list[str]
+    ) -> None:
+        list_file_info = []
+
+        # jsonファイルを読み込み
+        self.__read_items_from_file()
+        # 既に音声ファイルを削除しているのに、stateがdeletedになっていないものを抽出
+        list_file_info = list(filter(
+            lambda x:
+            x["fileName"] not in list_ignore_file_name
+            and x["state"] != self.DELETED,
+            list(self.file_access.json_data["data"])
+        ))
+        # stateをdeletedに更新
+        for item in list_file_info:
+            self.update_state_in_item(self.DELETED, item["fileName"])
+
     # 指定した状態（state）のファイルがいくつあるか取得
     def get_items_count(self, state: str) -> int:
         list_file_info = []

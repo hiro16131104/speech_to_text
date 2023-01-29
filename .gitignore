@@ -1,9 +1,17 @@
 # git管理から除外するファイル
 /back_end/__pycache__
 /back_end/.vscode
-/back_end/venv
+/back_end/venv/bin
+/back_end/venv/include
+/back_end/venv/lib
+/back_end/venv/pyvenv.cfg
 /back_end/models/__pycache__
-/front_end/node_modules
+/back_end/learned_model/large-v2.pt
+/back_end/learned_model/medium.pt
+/back_end/learned_model/small.pt
+/back_end/assets/audio_files/*
+/back_end/assets/csv_files/*
+/front_end/node_modules/*
 *.mp3
 *.m4a
 *.aac
