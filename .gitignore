@@ -1,17 +1,27 @@
-# git管理から除外するファイル
-/back_end/__pycache__
-/back_end/.vscode
-/back_end/venv/bin
-/back_end/venv/include
-/back_end/venv/lib
-/back_end/venv/pyvenv.cfg
-/back_end/models/__pycache__
-/back_end/learned_model/large-v2.pt
-/back_end/learned_model/medium.pt
-/back_end/learned_model/small.pt
-/back_end/assets/audio_files/*
-/back_end/assets/csv_files/*
-/front_end/node_modules/*
+.DS_Store
+node_modules
+/dist
+
+# local env files
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# git管理から除外するファイル（追加）
 *.mp3
 *.m4a
 *.aac
