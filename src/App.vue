@@ -565,6 +565,15 @@ export default {
       this.$refs.audioRecorder.isRecorded = false
       // ローディング中でなければ、アップロードボタンを使用可に
       this.uploadButtonState.isDisabled = this.uploadButtonState.isLoading ? true : false
+
+      if (!this.stateMsgText.includes("エラー")) { return }
+      // サーバーに保存した際のファイル名をクリア
+      this.serverFileName.audio = ""
+      this.serverFileName.csv = ""
+      // ブラウザに保存していた音声、csvファイルの名称を削除
+      this.customLocalStorage.removeItem()
+      // サーバーに処理状況を問い合わせ
+      this.resetTimer()
     },
     // キャンセルボタンのクリック
     handleClickCancelButton() {

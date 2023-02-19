@@ -2,16 +2,16 @@
     "comment": "Vueアプリの設定ファイル",
     "environment": {
         "comment": "本番環境は'production'、開発環境は'development'",
-        "value": "development"
+        "value": "production"
     },
     "backEndApiUrl": {
         "comment": "flaskAPIのURL",
-        "production": "https://",
-        "development": "http://localhost:5000"
+        "production": "https://speech-to-text-back-end.hirohiro-web-app.net",
+        "development": "http://localhost:5050"
     },
     "fileSize": {
         "comment": "アップロードを許可するファイルのサイズ（単位はByte）",
-        "audio": 52428800
+        "audio": 62914560
     },
     "mimeType": {
         "comment": "アップロードを許可するファイルの種類",
