@@ -2,7 +2,7 @@
     "comment": "Vueアプリの設定ファイル",
     "environment": {
         "comment": "本番環境は'production'、開発環境は'development'",
-        "value": "production"
+        "value": "development"
     },
     "backEndApiUrl": {
         "comment": "flaskAPIのURL",
@@ -22,7 +22,8 @@
             "audio/wav",
             "audio/webm",
             "audio/ogg",
-            "audio/x-ms-wma"
+            "audio/x-ms-wma",
+            "video/mp4"
         ]
     }
 }
