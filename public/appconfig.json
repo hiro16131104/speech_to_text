@@ -11,7 +11,7 @@
     },
     "fileSize": {
         "comment": "アップロードを許可するファイルのサイズ（単位はByte）",
-        "audio": 62914560
+        "audio": 20971520
     },
     "mimeType": {
         "comment": "アップロードを許可するファイルの種類",
@@ -22,8 +22,7 @@
             "audio/wav",
             "audio/webm",
             "audio/ogg",
-            "audio/x-ms-wma",
-            "video/mp4"
+            "audio/x-ms-wma"
         ]
     }
 }

@@ -34,8 +34,8 @@
         <p class="margin-top-2">
           これから録音する方はこちら
         </p>
-        <AudioRecorder id="audioRecorder" ref="audioRecorder" class="margin-top-2" width="100%"
-          :button="recorder.button" :blob-info-color="recorder.blobInfoColor" @recording-end="handleRecordingEnd"
+        <AudioRecorder id="audioRecorder" ref="audioRecorder" class="margin-top-2" width="100%" :button="recorder.button"
+          :blob-info-color="recorder.blobInfoColor" @recording-end="handleRecordingEnd"
           @click-record-button="handleClickRecordButton" @click-stop-button="handleClickStopButton">
         </AudioRecorder>
         <!-- 音声ファイルの再生 -->
@@ -62,8 +62,7 @@
         <!-- 初期化ボタン -->
         <CustomIconButton v-show="!isUploaded" id="clearButton" class="margin-top-2" :font="clearButton.font"
           :bg-color="clearButton.bgColor" :icon="clearButton.icon" :padding="clearButton.padding"
-          :width="clearButton.width" :round="clearButton.round" :type="clearButton.type"
-          @click="handleClickClearButton">
+          :width="clearButton.width" :round="clearButton.round" :type="clearButton.type" @click="handleClickClearButton">
           クリア
         </CustomIconButton>
         <!-- キャンセルボタン -->
@@ -116,7 +115,7 @@
         </TableNoFrame>
       </FlexContainer>
     </FlexContainer>
-  </FlexContainer>
+</FlexContainer>
 </template>
 
 <script>
@@ -541,8 +540,8 @@ export default {
       )
       webApiCall.callApiGet()
         .catch((error) => {
+          // 文字起こし中にエラーが発生した場合は、10秒ごとの問い合わせ時に判明するため、ここでアラートは表示しない。
           console.log(error.message)
-          alert("音声からテキストへ変換する際にエラーが発生しました。")
         })
         .finally(() => {
           // サーバーに処理状況を問い合わせ（変換完了）
